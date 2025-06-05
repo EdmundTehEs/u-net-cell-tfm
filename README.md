@@ -50,3 +50,19 @@ data/
 ...
 ```
 
+
+## Preparing data from raw images
+
+A command line utility `scripts/prepare_dataset.py` automates the traction force
+microscopy workflow and creates the `.npy` stacks expected by the U-Net. With one
+folder per cell containing the raw bead and fluorescence images run:
+
+```bash
+python scripts/prepare_dataset.py <input_root> <output_dataset>
+```
+
+The script performs registration, optical flow and Fourier-transform traction
+cytometry using the tools in `tfm/`. It then stacks the resulting displacement
+and force fields together with `zyxin.tif` and `actin.tif` into arrays in the
+channel order `[u_x, u_y, F_x, F_y, mask, forcemask, zyxin, actin]`. All frames
+are written to `<output_dataset>` and indexed in `dataset.csv`.
