@@ -50,3 +50,10 @@ data/
 ...
 ```
 
+
+## Workflow notebooks
+
+- `TFM_processing_to_npy.ipynb` shows how to register images, compute TFM displacements and convert the results into the 8‑channel `.npy` files expected by the data loader.
+- `full_pipeline.ipynb` combines these preprocessing steps with a demonstration of loading the generated data for training or inference with the U-Net model.
+
+A minimal list of python packages required to run the notebooks is provided in `requirements.txt`.

@@ -1,0 +1,9 @@
+numpy
+scipy
+pandas
+scikit-image
+opencv-python
+matplotlib
+torch
+torchvision
+tqdm
