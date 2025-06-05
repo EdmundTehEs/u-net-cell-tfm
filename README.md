@@ -1,10 +1,10 @@
-# 🧬 U-Net Cell Traction Force Prediction
+# U-Net Cell Traction Force Prediction
 
 This repository contains a complete pipeline for predicting **cell traction forces** from fluorescence microscopy images using a combination of **Traction Force Microscopy (TFM)** and a deep learning model based on **U-Net**.
 
 ---
 
-## 📦 What This Repository Does
+## What This Repository Does
 
 ### 1. **TFM Preprocessing**
 Given raw images of:
@@ -29,7 +29,7 @@ A U-Net model (`utils/UNeXt.py`) is trained to predict traction force maps from 
 
 ---
 
-## 🗂 Folder Structure
+## Folder Structure
 
 ```
 u-net-cell-tfm/
