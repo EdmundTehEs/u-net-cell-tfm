@@ -1,4 +1,4 @@
-# u-net-cell-tfm
+# U-Net-Cell-TFM
 
 This repository provides an integrated pipeline to process live-cell microscopy images using Traction Force Microscopy (TFM) and predict traction forces from fluorescence channels using a deep learning model based on U-Net.
 
