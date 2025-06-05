@@ -120,4 +120,12 @@ MIT License. See `LICENSE` for details.
 
 ## Acknowledgments
 
-This repository was developed as part of a research project in cell mechanics and super-resolution imaging, integrating microscopy image analysis with machine learning techniques. The TFM code is adapted from experimental lab pipelines, and the deep learning modules build on common U-Net implementations.
+This repository was developed as part of a research project in cell mechanics and super-resolution imaging, integrating microscopy image analysis with machine learning techniques. The TFM code was adapted from experimental pipelines in the Mechanobiology Institute (MBI) at the National University of Singapore, with mentorship and guidance from Wang Wei and Professor Tony Kanchanawong.
+
+The deep learning methodology and force prediction pipeline are adapted from the work of:
+
+> Schmitt, M.S., Colen, J., Sala, S., Devany, J., Seetharaman, S., Caillier, A., Gardel, M.L., Oakes, P.W., and Vitelli, V.  
+> *Machine learning interpretable models of cell mechanics from protein images.* Cell (2023).  
+> https://doi.org/10.1016/j.cell.2023.11.041
+
+Their publication and open-source model implementation provided the foundational structure and conceptual basis for predicting traction force distributions from focal adhesion protein images using U-Net-based architectures.
