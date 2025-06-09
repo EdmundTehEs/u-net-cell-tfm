@@ -7,7 +7,9 @@ import glob as glob                                            # for finding fil
 import os                                                      # for making directory to store displacement files
 
 
-def TFM_optical_flow(pyr_scale = 0.25, levels = 4, winsize = 24, iterations = 4, poly_n = 7, poly_sigma = 1.25):
+def TFM_optical_flow(cell_path='.', pyr_scale = 0.25, levels = 4, winsize = 24, iterations = 4, poly_n = 7, poly_sigma = 1.25):
+    current_dir = os.getcwd()
+    os.chdir(cell_path)
     # Create a dictionary of our PIV parameters
     PIV_params = {
     "method" : 'Farneback Optical Flow',
@@ -60,4 +62,5 @@ def TFM_optical_flow(pyr_scale = 0.25, levels = 4, winsize = 24, iterations = 4,
         io.imsave('displacement_files/disp_v_%03d.tif' % (t), flow[:,:,1], check_contrast=False)
 
 
+    os.chdir(current_dir)
     return
