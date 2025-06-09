@@ -19,7 +19,7 @@ from TFM_FTTC_tools import *
 
 
 def TFM_calculation(cell_path='.', shear_modulus=8600, um_per_pixel=.103174,
-                    regparam=1e-16, downsample=12, timepoint=1,
+                    regparam=1e-16, downsample=12, timepoint=0,
                     check_figure=False, fig_max_stress=1000,
                     save_files=True, return_data=False):
     """Run FTTC on a displacement stack and output traction maps.
@@ -120,16 +120,16 @@ def TFM_calculation(cell_path='.', shear_modulus=8600, um_per_pixel=.103174,
         traction_maps[t,:,:] = fnorm.copy()
         if save_files:
             # save the traction stresses as images
-            io.imsave('traction_files/fx_%03d.tif' % (t + 1), f[0,:,:].astype('float32'), check_contrast=False)
-            io.imsave('traction_files/fy_%03d.tif' % (t + 1), f[1,:,:].astype('float32'), check_contrast=False)
+            io.imsave('traction_files/fx_%03d.tif' % (t), f[0,:,:].astype('float32'), check_contrast=False)
+            io.imsave('traction_files/fy_%03d.tif' % (t), f[1,:,:].astype('float32'), check_contrast=False)
 
         # store the recovered displacement norm
         urec_norm = np.sqrt(urec[0,:,:]**2 + urec[1,:,:]**2)
         displacement_maps[t,:,:] = urec_norm.copy()
         if save_files:
             # save the recovered displacement vectors as images
-            io.imsave('recovered_displacement_files/disp_ur_%03d.tif' % (t + 1), urec[0,:,:].astype('float32'), check_contrast=False)
-            io.imsave('recovered_displacement_files/disp_vr_%03d.tif' % (t + 1), urec[1,:,:].astype('float32'), check_contrast=False)
+            io.imsave('recovered_displacement_files/disp_ur_%03d.tif' % (t), urec[0,:,:].astype('float32'), check_contrast=False)
+            io.imsave('recovered_displacement_files/disp_vr_%03d.tif' % (t), urec[1,:,:].astype('float32'), check_contrast=False)
 
     if save_files:
         io.imsave('traction_maps.tif', traction_maps.astype('int16'), check_contrast=False)
@@ -168,10 +168,10 @@ def TFM_calculation(cell_path='.', shear_modulus=8600, um_per_pixel=.103174,
         file_list_fy = sorted(glob.glob('traction_files/fy_*.tif'))
         if len(file_list_fx) == 0 or len(file_list_fy) == 0:
             raise FileNotFoundError('Traction files not found in traction_files/')
-        if not os.path.isfile(file_list_fx[timepoint - 1]) or not os.path.isfile(file_list_fy[timepoint - 1]):
+        if not os.path.isfile(file_list_fx[timepoint]) or not os.path.isfile(file_list_fy[timepoint]):
             raise FileNotFoundError('Specified traction file not found')
-        fx = io.imread(file_list_fx[timepoint - 1])
-        fy = io.imread(file_list_fy[timepoint - 1])
+        fx = io.imread(file_list_fx[timepoint])
+        fy = io.imread(file_list_fy[timepoint])
         fnorm = np.sqrt(fx**2 + fy**2)
 
         x_small = grid_mat[0,::downsample,::downsample]
