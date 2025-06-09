@@ -35,7 +35,7 @@ Raw microscopy input data must be placed in `input_data/` under subfolders for e
 input_data/
 ├── Cell001/
 │   ├── beads.tif
-│   ├── reference.tif
+│   ├── beads_reference.tif
 │   ├── zyxin.tif
 │   └── actin.tif
 ├── Cell002/
@@ -44,7 +44,7 @@ input_data/
 
 Each subfolder must include:
 - `beads.tif`: image of substrate under force
-- `reference.tif`: image of relaxed substrate (no force)
+- `beads_reference.tif`: image of relaxed substrate (no force)
 - `zyxin.tif` and `actin.tif`: fluorescence channels
 
 ---
