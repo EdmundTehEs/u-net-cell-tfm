@@ -33,15 +33,17 @@ class r_MSE_loss_dict(nn.MSELoss):
 
 
 def angle_error(ang1, ang2):
+    """Return wrapped angle difference between two arrays."""
     if torch.is_tensor(ang1):
-        return (torch.remainder(ang - pred_ang + np.pi, 2*np.pi) - np.pi)**2 
+        return (torch.remainder(ang1 - ang2 + np.pi, 2 * np.pi) - np.pi)
     else:
-        return np.abs(np.remainder(ang1 - ang2 + np.pi, 2*np.pi) - np.pi)    
+        return np.abs(np.remainder(ang1 - ang2 + np.pi, 2 * np.pi) - np.pi)
 
 
 
 def angle_loss(ang, pred_ang):
-    return (torch.remainder(ang - pred_ang + np.pi, 2*np.pi) - np.pi)**2 
+    """Squared wrapped error between true and predicted angles."""
+    return (torch.remainder(ang - pred_ang + np.pi, 2 * np.pi) - np.pi) ** 2
 
 
 class AM_loss_dict(nn.MSELoss): # Angle magnitude loss

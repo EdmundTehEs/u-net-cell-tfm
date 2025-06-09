@@ -15,9 +15,22 @@ except:
 
 
 def calculate_fourier_modes(mesh_size, i_max, j_max, lanczos_exp=0):
-    '''
-    Calculate the wave vectors based on the mesh size
-    '''
+    """Generate Fourier mode grids used in FTTC.
+
+    Parameters
+    ----------
+    mesh_size : float
+        Pixel spacing of the displacement grid.
+    i_max, j_max : int
+        Number of grid points in ``y`` and ``x`` directions.
+    lanczos_exp : int, optional
+        Exponent for optional Lanczos filtering.
+
+    Returns
+    -------
+    tuple(ndarray, ndarray, ndarray, ndarray)
+        ``kx`` and ``ky`` wave-number grids and their Lanczos filters.
+    """
     kx_vec = 2. * np.pi / i_max / mesh_size * np.append(np.arange(0, (i_max/2)), np.arange(-i_max/2, 0))
     ky_vec = 2. * np.pi / j_max / mesh_size * np.append(np.arange(0, (j_max/2)), np.arange(-j_max/2, 0))
     kx = np.kron(np.ones((1,j_max)), np.array([kx_vec]).T)
@@ -30,10 +43,28 @@ def calculate_fourier_modes(mesh_size, i_max, j_max, lanczos_exp=0):
     return kx, ky, lanczosx, lanczosy   
 
 def calculate_greens_function(E, s, kx, ky, i_max, j_max, mesh_size, bead_depth):
-    '''
-    Calculate Greens function in Fourier space
-    All units are in pixels^-1
-    '''
+    """Compute the substrate Green's function in Fourier space.
+
+    Parameters
+    ----------
+    E : float
+        Young's modulus of the substrate.
+    s : float
+        Poisson ratio.
+    kx, ky : ndarray
+        Fourier wave-number grids from :func:`calculate_fourier_modes`.
+    i_max, j_max : int
+        Grid dimensions.
+    mesh_size : float
+        Pixel spacing of the displacement grid.
+    bead_depth : float
+        Bead embedding depth in pixels.
+
+    Returns
+    -------
+    ndarray
+        4-D array with Fourier-domain Green's function components.
+    """
     V = 2 *(1 + s) / E
     # calculate matrices of kx and ky
     kx_sq = kx**2
@@ -52,6 +83,7 @@ def calculate_greens_function(E, s, kx, ky, i_max, j_max, mesh_size, bead_depth)
     return GFt
 
 def calculate_Ginv(GFt, LL):
+    """Invert the Green's function with Tikhonov regularization."""
 
     # make the regularization identity matrix
     LL_I = LL * np.ones((GFt.shape[2],GFt.shape[3]))
@@ -74,9 +106,18 @@ def calculate_Ginv(GFt, LL):
 
 
 def calculate_coefficient_matrix(GFt):
-    '''
-    Matrix for use in Bayesian approach to determining regularization parameter
-    '''
+    """Build sparse matrix for Bayesian regularization estimation.
+
+    Parameters
+    ----------
+    GFt : ndarray
+        Green's function in Fourier space.
+
+    Returns
+    -------
+    scipy.sparse.csr_matrix
+        Coefficient matrix relating tractions and displacements.
+    """
     G1 = GFt[0,0].flatten('F')
     G2 = GFt[1,1].flatten('F')
     X1 = np.vstack((G1,G2)).flatten('F')
@@ -90,9 +131,20 @@ def calculate_coefficient_matrix(GFt):
     return X
 
 def calculate_evidence(alpha, *args):
-    '''
-    Function to calculate the bayesian evidence for regularization
-    '''
+    """Return the Bayesian evidence used to choose the regularization.
+
+    Parameters
+    ----------
+    alpha : float
+        Candidate regularization parameter.
+    *args : tuple
+        Precomputed matrices and vectors required for evidence evaluation.
+
+    Returns
+    -------
+    float
+        Negative log-evidence value.
+    """
     # unpack arguments
     beta, GFt, u, C_a, BX_a, X, fuu, M_rows, M_cols, constant = args
     # beta, u, C_a, BX_a, X, fuu, M_rows, M_cols, constant, kx, ky, E, s, meshsize = args
@@ -131,13 +183,24 @@ def calculate_evidence(alpha, *args):
     return evidence_value
 
 def gaussian_fit(intensity, A, B, C):
+    """Gaussian function used for histogram fitting."""
     return A * np.exp(-0.5 * ((intensity - B) / C) ** 2)
 
 def estimate_displacement_variance(u, plot_distribution = False):
-    '''
-    Estimate the variance of the noise in the displacement field by fitting a gaussian to the major
-    peak in the displacement histogram
-    '''
+    """Estimate noise variance from a displacement field.
+
+    Parameters
+    ----------
+    u : ndarray
+        Displacement field array ``[2, H, W]``.
+    plot_distribution : bool, optional
+        If ``True`` plot the fitted histogram.
+
+    Returns
+    -------
+    float
+        Estimated variance of the displacement noise.
+    """
     # histogram of displacement vectors
     counts, bin_edges = np.histogram(u.ravel(), bins=200)
     # get bin centers instead of edges
@@ -175,12 +238,7 @@ def estimate_displacement_variance(u, plot_distribution = False):
     return variance
 
 def calculate_regularization_parameter(GFt, u, beta, kx, ky, E, s, meshsize):
-    '''
-    This is taken straight from:
-    Yunfei Huang, Gerhard Compper, Benedikt Sabass
-    A Bayesian tractin force microscopy method with automated denoising in a user-friendly software package
-    Computer Physics Communications 256 (2020) 107313
-    '''
+    """Estimate the optimal Tikhonov parameter via Bayesian FTTC."""
 
     # generate sparse matrix
     X = calculate_coefficient_matrix(GFt)
@@ -211,9 +269,7 @@ def calculate_regularization_parameter(GFt, u, beta, kx, ky, E, s, meshsize):
     return LL
 
 def reg_fourier_TFM_L2(u, Ginv_xx, Ginv_xy, Ginv_yy):
-    '''
-    Calculate the Fourier Transformed Forces using Ginv
-    '''
+    """Compute traction forces from displacements in Fourier space."""
     Ftux = np.fft.fft2(u[0])
     Ftuy = np.fft.fft2(u[1])
     Ftfx = Ginv_xx * Ftux + Ginv_xy * Ftuy
@@ -221,6 +277,7 @@ def reg_fourier_TFM_L2(u, Ginv_xx, Ginv_xy, Ginv_yy):
     return Ftfx, Ftfy
 
 def reconstruct_displacement_field(GFt, Ftfx, Ftfy, lanczosx, lanczosy):
+    """Reconstruct displacements from forces using the Green's function."""
     # use the Green's function and calculated Forces to predict displacements
     Ftux_rec = GFt[0, 0] * Ftfx + GFt[0, 1] * Ftfy
     Ftuy_rec = GFt[1, 0] * Ftfx + GFt[1, 1] * Ftfy
@@ -234,7 +291,8 @@ def reconstruct_displacement_field(GFt, Ftfx, Ftfy, lanczosx, lanczosy):
 
 def calculate_stress_field(Ftfx, Ftfy, lanczosx, lanczosy, grid_mat, u, i_max, j_max, \
                            i_bound_size, j_bound_size, pix_per_mu, mesh_size):
-    fx = np.fft.ifft2(lanczosx * Ftfx) 
+    """Convert Fourier forces to real-space stresses and energy."""
+    fx = np.fft.ifft2(lanczosx * Ftfx)
     fy = np.fft.ifft2(lanczosy * Ftfy)
     pos = np.array([np.reshape(grid_mat[0], (i_max*j_max)), 
                         np.reshape(grid_mat[1], (i_max*j_max))])
@@ -247,11 +305,13 @@ def calculate_stress_field(Ftfx, Ftfy, lanczosx, lanczosy, grid_mat, u, i_max, j
     return pos, vec, fnorm, f, energy
 
 def calculate_energy(u, f, pix_per_mu, mesh_size):
-    l = mesh_size / pix_per_mu * 1e-6   # nodal distance in the rectangular grid in m**2 -> dA = l**2
-    energy = 0.5 * l**2 * np.sum(u * f) * 1e-6 / pix_per_mu # u is given in pix -> additional 1e-6 / pix_per_mu, f is given in Pa
+    """Compute strain energy in picojoules."""
+    l = mesh_size / pix_per_mu * 1e-6   # nodal distance in meters
+    energy = 0.5 * l**2 * np.sum(u * f) * 1e-6 / pix_per_mu
     return energy
 
 def find_regularization_parameter(shear_modulus = 16000):
+    """Convenience wrapper to compute a regularization value from test files."""
     # calculate the best regularization parameter
     disp_u_file = 'displacement_files/disp_u_001.tif'
     disp_v_file = 'displacement_files/disp_v_001.tif'

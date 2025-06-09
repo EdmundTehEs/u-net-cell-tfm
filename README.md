@@ -77,6 +77,12 @@ pip install -r requirements.txt
 
 ## How to Use
 
+### Workflow Summary
+1. **Register beads** and compute displacements using scripts in `tfm/`.
+2. **Calculate traction maps** with `TFM_calculation` and generate masks.
+3. **Assemble training stacks** via the notebooks in `notebooks/`.
+4. **Train** the U-Net (`train_unet.ipynb`) and **predict** new force maps.
+
 ### Option 1: End-to-End in Notebook
 
 Run the notebook:

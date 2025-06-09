@@ -7,7 +7,21 @@ import glob as glob                                            # for finding fil
 import os                                                      # for making directory to store displacement files
 
 
-def TFM_optical_flow(cell_path='.', pyr_scale = 0.25, levels = 4, winsize = 24, iterations = 4, poly_n = 7, poly_sigma = 1.25):
+def TFM_optical_flow(cell_path='.', pyr_scale=0.25, levels=4, winsize=24,
+                     iterations=4, poly_n=7, poly_sigma=1.25):
+    """Calculate bead displacements using Farneback optical flow.
+
+    Parameters
+    ----------
+    cell_path : str, optional
+        Folder containing a registered bead stack and reference image.
+    pyr_scale, levels, winsize, iterations, poly_n, poly_sigma : float or int
+        Parameters passed to ``cv2.calcOpticalFlowFarneback``.
+
+    Side Effects
+    ------------
+    Saves displacement images in ``displacement_files/`` inside ``cell_path``.
+    """
     current_dir = os.getcwd()
     os.chdir(cell_path)
     # Create a dictionary of our PIV parameters

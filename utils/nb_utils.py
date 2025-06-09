@@ -16,6 +16,7 @@ import copy
 import skimage.measure as measure
 
 def linescan(image, points, width=3):
+    """Extract intensity along a polyline with given ``width``."""
     segments = []
     for p, pnext in zip(points[:-1], points[1:]):
         x0, y0 = p # These are in _pixel_ coordinates!!
@@ -55,6 +56,7 @@ def linescan(image, points, width=3):
     return [xL, yL], dline, xlines, ylines
 
 def nxtkey(dictionary, layer=0):
+    """Return the first key of a dictionary or nested dictionary."""
     if layer==0:
         return list(dictionary.keys())[0]
     
@@ -66,6 +68,7 @@ def nxtkey(dictionary, layer=0):
         
 
 def ax_adjust(ax, axlw=3, tickparams={"direction": "in"}):
+    """Tidy up matplotlib axes for figures."""
     for axis in ['top','bottom','left','right']:
           ax.spines[axis].set_linewidth(axlw)
             
@@ -73,7 +76,8 @@ def ax_adjust(ax, axlw=3, tickparams={"direction": "in"}):
     return
 
 def get_yavg_scatter(xs, ys, nbins=20, crop=None):
-    
+    """Return average ``y`` value per ``x`` bin for scatter data."""
+
     if crop:
         bins = np.linspace(0, np.min([crop, np.min([np.max(ys), np.max(xs)])]), nbins+1)
     else:
@@ -93,7 +97,8 @@ def get_yavg_scatter(xs, ys, nbins=20, crop=None):
     return yavg,std,bins
 
 def get_yavg(hist2D, ybins, thresh=None, crop=0, threshby='sum', angle=False, stderr=False):
-    # Assume ybins is just 
+    """Compute average ``y`` of a 2D histogram along axis 0."""
+    # Assume ybins is just
     
     if crop:
         ybins = ybins[crop:]
@@ -164,19 +169,24 @@ def make_vector_field(component1, component2, downsample=1, threshold=None, angm
     
     return X, Y, vx, vy
 
-def smooth(x, window=5): return np.convolve(x, np.ones(window)/window, mode='valid')
+def smooth(x, window=5):
+    """Simple 1D moving average."""
+    return np.convolve(x, np.ones(window)/window, mode='valid')
 
 def log_norm(vmin=None, vmax=None):
-    norm=colors.LogNorm(vmin=vmin, vmax=vmax)
+    """Return Matplotlib LogNorm with optional limits."""
+    norm = colors.LogNorm(vmin=vmin, vmax=vmax)
     return norm
 
 def log_cmap(cmap):
-    my_cmap = copy.copy(matplotlib.cm.get_cmap(cmap)) # copy the default cmap
-    my_cmap.set_bad((0,0,0))
+    """Return a colormap with NaNs plotted as black."""
+    my_cmap = copy.copy(matplotlib.cm.get_cmap(cmap))
+    my_cmap.set_bad((0, 0, 0))
     return my_cmap
 ## Get distance function from a point
 
 def get_radii(image_size=768, center=None, im_center=None):
+    """Return radii matrix from a specified center."""
     image = np.zeros((image_size, image_size))
     
     if im_center is None:
@@ -197,6 +207,7 @@ def get_radii(image_size=768, center=None, im_center=None):
 
 
 def rad_avg(image):
+    """Radial average of a square image."""
     R = get_radii(image_size=image.shape[0]) # assume square image shape
     
     f = lambda r : image[(R >= r-.5) & (R < r+.5)].mean()
@@ -206,6 +217,7 @@ def rad_avg(image):
     return f(r)
 
 def get_label_statistics(image, labels, max_labels=10):
+    """Return mean and std for each label in ``labels``."""
     nlabels = max_labels # assume 0 is no label
 
     label_sets = [image[labels==(L+1)] if np.any(labels==L+1) else 0 for L in range(nlabels)]
@@ -217,6 +229,7 @@ def get_label_statistics(image, labels, max_labels=10):
 ## Utils for making fake cells
 
 def make_ellipse(radius, dx, dy, image_size=768, center=None, angle=0):
+    """Create a binary ellipse mask."""
     image = np.zeros((image_size, image_size))
     center_im = np.asarray(image.shape)//2
 
@@ -237,6 +250,7 @@ def make_ellipse(radius, dx, dy, image_size=768, center=None, angle=0):
     return mask #,Ellipse_dist_from_center, dist_from_center
 
 def make_circle(radius, imsize=512, center=None):
+    """Return binary circle mask and distance matrix."""
     image = np.zeros((imsize, imsize))
     
     image_center = np.asarray(image.shape)//2
@@ -254,6 +268,7 @@ def make_circle(radius, imsize=512, center=None):
     return mask, dist_from_center
 
 def make_square(radius, imsize=512, center=None):
+    """Return square mask and distance from center."""
     image = np.zeros((imsize, imsize))
     if center is None:
         center = np.asarray(image.shape)//2
@@ -268,6 +283,7 @@ def make_square(radius, imsize=512, center=None):
 
 
 def make_cell(radius=500, FA_density=1, FA_len=50, FA_width=10, image_size=768):
+    """Generate a simple synthetic cell mask with focal adhesion ellipses."""
     N = np.round(radius*2*np.pi/FA_width)
     angles = 2*np.pi*np.linspace(0,1,int(N*FA_density))[:-1]
     
