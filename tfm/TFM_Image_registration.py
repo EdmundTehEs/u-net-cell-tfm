@@ -48,6 +48,8 @@ def TFM_Image_registration(cell_path='.', flatfield_correct = False, image_list 
     # check if reference has already been corrected
     original_reference_image = glob.glob('*reference_original.tif')
     if len(original_reference_image) > 0:
+        if not os.path.isfile(original_reference_image[0]):
+            raise FileNotFoundError(f"Expected reference image '{original_reference_image[0]}' not found")
         reference_image = io.imread(original_reference_image[0], plugin='tifffile', is_ome=False)
         # Correct the reference image
         if flatfield_correct:
@@ -58,6 +60,10 @@ def TFM_Image_registration(cell_path='.', flatfield_correct = False, image_list 
     else:
         # Otherwise find and read in your reference image
         file_list = glob.glob('*_reference.tif')
+        if len(file_list) == 0:
+            raise FileNotFoundError("No '*_reference.tif' image found")
+        if not os.path.isfile(file_list[0]):
+            raise FileNotFoundError(f"Expected reference image '{file_list[0]}' not found")
         reference_image = io.imread(file_list[0], plugin='tifffile', is_ome=False)
         # Correct the reference image
         if flatfield_correct:
@@ -69,7 +75,10 @@ def TFM_Image_registration(cell_path='.', flatfield_correct = False, image_list 
     N_cols = reference_image.shape[1]
 
     # read in your bead image
-    image_stack = io.imread(file_name + '.tif')
+    bead_file = file_name + '.tif'
+    if not os.path.isfile(bead_file):
+        raise FileNotFoundError(f"Bead stack '{bead_file}' not found")
+    image_stack = io.imread(bead_file)
 
     # correct the stack shape if there's only one image
     if len(image_stack.shape) == 2:
@@ -128,6 +137,8 @@ def TFM_Image_registration(cell_path='.', flatfield_correct = False, image_list 
         # check if the original reference image file has been saved
         ref_original = glob.glob('*reference_original.tif')
         ref_im = glob.glob('*_reference.tif')
+        if len(ref_im) == 0 or not os.path.isfile(ref_im[0]):
+            raise FileNotFoundError("Reference image for size correction not found")
         reference_image = io.imread(ref_im[0])
         if len(ref_original) == 0:
             io.imsave(ref_im[0][:-4] + '_original.tif', reference_image, check_contrast=False)
@@ -137,6 +148,8 @@ def TFM_Image_registration(cell_path='.', flatfield_correct = False, image_list 
         # check if the original reference image file has been saved
         ref_original = glob.glob('*reference_original.tif')
         ref_im = glob.glob('*_reference.tif')
+        if len(ref_im) == 0 or not os.path.isfile(ref_im[0]):
+            raise FileNotFoundError("Reference image for size correction not found")
         reference_image = io.imread(ref_im[0])
         if len(ref_original) == 0:
             io.imsave(ref_im[0][:-4] + '_original.tif', reference_image, check_contrast=False)
@@ -177,6 +190,8 @@ def shift_image_stack(image_stack_name, shift_coordinates, flatfield_image =  No
     """
     
     # read in image stack
+    if not os.path.isfile(image_stack_name):
+        raise FileNotFoundError(f"Image stack '{image_stack_name}' not found")
     image_stack = io.imread(image_stack_name, plugin='tifffile', is_ome=False).astype('int16')
     
     # correct the stack shape if there's only one image
