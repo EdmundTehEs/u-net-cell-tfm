@@ -3,6 +3,7 @@
 import glob as glob                                  		 # for finding files in the folder
 import skimage.io as io                              		 # for reading/writing images
 import numpy as np                                   		 # for math operations
+import os                                                        # for handling directories
 from scipy.fftpack import fft2, ifft2, ifftshift     		 # for fourier transform operations
 from skimage.registration import phase_cross_correlation     # registration function
 
@@ -27,7 +28,9 @@ def flat_field_correct_image(image, flat_field_image, dark_image):
         
     return corrected_image
 
-def TFM_Image_registration(flatfield_correct = False, image_list = None, flatfield_images = None, darkfield_image = None):
+def TFM_Image_registration(cell_path='.', flatfield_correct = False, image_list = None, flatfield_images = None, darkfield_image = None):
+    current_dir = os.getcwd()
+    os.chdir(cell_path)
 
     # Check if images are to be corrected
     if flatfield_correct:
@@ -153,7 +156,8 @@ def TFM_Image_registration(flatfield_correct = False, image_list = None, flatfie
                 shift_image_stack(image_name, shift_coordinates, flatfield_images[i+1], darkfield_image, correct_odd_imagesize = True)
             else:
                 shift_image_stack(image_name, shift_coordinates, correct_odd_imagesize = True)
-                      
+
+    os.chdir(current_dir)
     return
 
 def shift_image_stack(image_stack_name, shift_coordinates, flatfield_image =  None, darkfield_image = None, correct_odd_imagesize = True):

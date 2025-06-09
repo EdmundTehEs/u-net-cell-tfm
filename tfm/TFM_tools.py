@@ -18,7 +18,9 @@ from TFM_FTTC_tools import *
 
 
 
-def TFM_calculation(shear_modulus = 8600, um_per_pixel = .103174, regparam = 1e-16, downsample = 12, timepoint = 1, check_figure=False, fig_max_stress = 1000):
+def TFM_calculation(cell_path='.', shear_modulus = 8600, um_per_pixel = .103174, regparam = 1e-16, downsample = 12, timepoint = 1, check_figure=False, fig_max_stress = 1000):
+    current_dir = os.getcwd()
+    os.chdir(cell_path)
     # Find the displacement files
     file_list_dispu = sorted(glob.glob('displacement_files/disp_u*.tif'))
     file_list_dispv = sorted(glob.glob('displacement_files/disp_v*.tif'))
@@ -192,7 +194,8 @@ def TFM_calculation(shear_modulus = 8600, um_per_pixel = .103174, regparam = 1e-
         TFM_check_axes[1,3].axis('off')
         TFM_check_fig.tight_layout()
         TFM_check_fig.show()
-    return 
+    os.chdir(current_dir)
+    return
 
 
 def TFM_analysis(GFP='', force_min=0):
@@ -323,7 +326,9 @@ def TFM_analysis(GFP='', force_min=0):
 
     return
 
-def cellmask_threshold(imagename, small_object_size=50, cell_minimum_area=50000, dilation_size = 10, save_figure=True, plot_figure=True, timepoint = 0):
+def cellmask_threshold(cell_path='.', imagename='561short_registered.tif', small_object_size=50, cell_minimum_area=50000, dilation_size = 10, save_figure=True, plot_figure=True, timepoint = 0):
+    current_dir = os.getcwd()
+    os.chdir(cell_path)
     # check if it's a string or a matrix and read in the image
     if isinstance(imagename, str):
         imagestack = io.imread(imagename, plugin='tifffile', is_ome=False)
@@ -470,6 +475,7 @@ def cellmask_threshold(imagename, small_object_size=50, cell_minimum_area=50000,
         cellmask_stack = cellmask_stack[0]
         forcemask_stack = forcemask_stack[0]
 
+    os.chdir(current_dir)
     return cellmask_stack, forcemask_stack, threshold
 
 
