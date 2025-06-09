@@ -12,7 +12,8 @@ The workflow processes bead and reference images to compute displacements and tr
 u-net-cell-tfm/
 ├── notebooks/                  # Jupyter notebooks (pipeline, training, inference)
 │   ├── Full_TFM_UNet_Pipeline.ipynb
-│   ├── PrepareDataset.ipynb
+│   ├── DataProcessing.ipynb
+│   ├── dataset_viewer.ipynb
 │   ├── train_unet.ipynb
 │   └── load_trained_unet.ipynb
 ├── tfm/                        # TFM-related Python scripts (image registration, FTTC, etc.)
@@ -21,7 +22,6 @@ u-net-cell-tfm/
 ├── input_data/                # Input directory to place cell folders with .tif files
 ├── requirements.txt           # Minimal required Python packages
 ├── cellstress_venv.yml        # Full Conda environment (Python 3.7, CUDA 10.2)
-├── prepare_dataset.py         # Script version of the dataset creation pipeline
 └── README.md                  # This file
 ```
 
@@ -94,7 +94,7 @@ This will:
 
 You can also run each step separately:
 
-- Dataset preparation: `prepare_dataset.py`
+- Dataset preparation: `notebooks/Full_TFM_UNet_Pipeline.ipynb` (or modify it to generate only the dataset)
 - Training: `notebooks/train_unet.ipynb`
 - Inference: `notebooks/load_trained_unet.ipynb`
 
