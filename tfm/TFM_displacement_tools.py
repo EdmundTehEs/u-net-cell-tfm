@@ -30,6 +30,10 @@ def TFM_optical_flow(cell_path='.', pyr_scale = 0.25, levels = 4, winsize = 24, 
 
     # read in reference image
     ref_file_list = glob.glob('*_reference.tif')
+    if len(ref_file_list) == 0:
+        raise FileNotFoundError("No '*_reference.tif' image found")
+    if not os.path.isfile(ref_file_list[0]):
+        raise FileNotFoundError(f"Expected reference image '{ref_file_list[0]}' not found")
     reference_image = io.imread(ref_file_list[0])
 
     # make a directory to store all the displacement files
@@ -37,7 +41,10 @@ def TFM_optical_flow(cell_path='.', pyr_scale = 0.25, levels = 4, winsize = 24, 
         os.mkdir('displacement_files/')
 
     # read in image stack
-    image_stack = io.imread(ref_file_list[0][:-14] + '_registered.tif')
+    stack_file = ref_file_list[0][:-14] + '_registered.tif'
+    if not os.path.isfile(stack_file):
+        raise FileNotFoundError(f"Registered bead stack '{stack_file}' not found")
+    image_stack = io.imread(stack_file)
 
     # correct the stack shape if there's only one image
     if len(image_stack.shape) == 2:

@@ -24,10 +24,14 @@ def TFM_calculation(cell_path='.', shear_modulus = 8600, um_per_pixel = .103174,
     # Find the displacement files
     file_list_dispu = sorted(glob.glob('displacement_files/disp_u*.tif'))
     file_list_dispv = sorted(glob.glob('displacement_files/disp_v*.tif'))
+    if len(file_list_dispu) == 0 or len(file_list_dispv) == 0:
+        raise FileNotFoundError('Displacement files not found in displacement_files/')
 
     # Number of files to process
     N_images = len(file_list_dispu)
 
+    if not os.path.isfile(file_list_dispu[0]):
+        raise FileNotFoundError(f"Displacement file '{file_list_dispu[0]}' not found")
     temp_image = io.imread(file_list_dispu[0])
     N_rows, N_cols = temp_image.shape
 
@@ -78,6 +82,8 @@ def TFM_calculation(cell_path='.', shear_modulus = 8600, um_per_pixel = .103174,
 
     for t in np.arange(0,N_images):
         # read in strain fields
+        if not os.path.isfile(file_list_dispu[t]) or not os.path.isfile(file_list_dispv[t]):
+            raise FileNotFoundError('Displacement file missing during processing')
         disp_u = io.imread(file_list_dispu[t])
         disp_v = io.imread(file_list_dispv[t])
 
@@ -144,6 +150,10 @@ def TFM_calculation(cell_path='.', shear_modulus = 8600, um_per_pixel = .103174,
     # Find the displacement and traction stress files
     file_list_fx = sorted(glob.glob('traction_files/fx_*.tif'))
     file_list_fy = sorted(glob.glob('traction_files/fy_*.tif'))
+    if len(file_list_fx) == 0 or len(file_list_fy) == 0:
+        raise FileNotFoundError('Traction files not found in traction_files/')
+    if not os.path.isfile(file_list_fx[timepoint - 1]) or not os.path.isfile(file_list_fy[timepoint - 1]):
+        raise FileNotFoundError('Specified traction file not found')
     fx = io.imread(file_list_fx[timepoint - 1])
     fy = io.imread(file_list_fy[timepoint - 1])
     fnorm = np.sqrt(fx**2 + fy**2)
@@ -211,11 +221,19 @@ def TFM_analysis(GFP='', force_min=0):
     file_list_fy = sorted(glob.glob('traction_files/fy_*.tif'))
     file_list_dispu = sorted(glob.glob('displacement_files/disp_u*.tif'))
     file_list_dispv = sorted(glob.glob('displacement_files/disp_v*.tif'))
+    if len(file_list_fx) == 0 or len(file_list_fy) == 0:
+        raise FileNotFoundError('Traction files not found in traction_files/')
+    if len(file_list_dispu) == 0 or len(file_list_dispv) == 0:
+        raise FileNotFoundError('Displacement files not found in displacement_files/')
 
     # Number of files to process
     N_images = len(file_list_fx)
 
     # read in the cell mask
+    if not os.path.isfile('cellmask.tif'):
+        raise FileNotFoundError('cellmask.tif not found')
+    if not os.path.isfile('forcemask.tif'):
+        raise FileNotFoundError('forcemask.tif not found')
     cellmask = io.imread('cellmask.tif').astype(bool)
     # read in the mask for the forces
     forcemask = io.imread('forcemask.tif').astype(bool)
@@ -257,6 +275,9 @@ def TFM_analysis(GFP='', force_min=0):
     for timepoint in np.arange(0,N_images):
 
         # read in the file
+        if not (os.path.isfile(file_list_fx[timepoint]) and os.path.isfile(file_list_fy[timepoint]) and
+                os.path.isfile(file_list_dispu[timepoint]) and os.path.isfile(file_list_dispv[timepoint])):
+            raise FileNotFoundError('Required data files missing for analysis')
         tractionx = io.imread(file_list_fx[timepoint])
         tractiony = io.imread(file_list_fy[timepoint])
         dispx = io.imread(file_list_dispu[timepoint])
@@ -331,6 +352,8 @@ def cellmask_threshold(cell_path='.', imagename='561short_registered.tif', small
     os.chdir(cell_path)
     # check if it's a string or a matrix and read in the image
     if isinstance(imagename, str):
+        if not os.path.isfile(imagename):
+            raise FileNotFoundError(f"Image stack '{imagename}' not found")
         imagestack = io.imread(imagename, plugin='tifffile', is_ome=False)
     else:
         imagestack = imagename
@@ -439,7 +462,7 @@ def cellmask_threshold(cell_path='.', imagename='561short_registered.tif', small
         cellname = cwd[cwd.find('cell'):] 
         # check to see if tractionmaps exist
         traction_file = glob.glob('traction_maps.tif')
-        if len(traction_file) == 1:
+        if len(traction_file) == 1 and os.path.isfile('traction_maps.tif'):
             tractionmap = io.imread('traction_maps.tif')
             if len(tractionmap.shape) > 2:
                 tractionmap = tractionmap[timepoint]
@@ -485,6 +508,10 @@ def crop_TFM_image(frame, width, height, corner = (0,0), mask = None, arrow_spac
     # get list of images
     fx_im_list = sorted(glob.glob('traction_files/fx*.tif'))
     fy_im_list = sorted(glob.glob('traction_files/fy*.tif'))
+    if len(fx_im_list) == 0 or len(fy_im_list) == 0:
+        raise FileNotFoundError('Traction files not found in traction_files/')
+    if frame >= len(fx_im_list) or frame >= len(fy_im_list):
+        raise IndexError('Frame index out of range for traction files')
     # read in the frame of interest
     fx = io.imread(fx_im_list[frame])
     fy = io.imread(fy_im_list[frame])

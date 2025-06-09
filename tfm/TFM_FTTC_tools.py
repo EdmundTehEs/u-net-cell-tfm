@@ -7,6 +7,7 @@ from scipy.sparse import spdiags, csr_matrix, linalg           # sparse matrix a
 import matplotlib.pyplot as plt                                # for plotting
 import glob as glob                                            # grabbing file names
 import skimage.io as io                                        # reading in images
+import os
 import openpiv.pyprocess
 import scipy.sparse as sparse
 import scipy.linalg as linalg
@@ -256,8 +257,12 @@ def calculate_energy(u, f, pix_per_mu, mesh_size):
 
 def find_regularization_parameter(shear_modulus = 16000):
     # calculate the best regularization parameter
-    ux = io.imread('displacement_files/disp_u_001.tif')
-    uy = io.imread('displacement_files/disp_v_001.tif')
+    disp_u_file = 'displacement_files/disp_u_001.tif'
+    disp_v_file = 'displacement_files/disp_v_001.tif'
+    if not os.path.isfile(disp_u_file) or not os.path.isfile(disp_v_file):
+        raise FileNotFoundError('Required displacement files not found')
+    ux = io.imread(disp_u_file)
+    uy = io.imread(disp_v_file)
     u = np.zeros((2,ux.shape[0],ux.shape[1]))
     u[0,:,:] = ux
     u[1,:,:] = uy
