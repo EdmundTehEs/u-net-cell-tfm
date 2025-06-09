@@ -27,12 +27,29 @@ def flat_field_correct_image(image, flat_field_image, dark_image):
     return corrected_image
 
 def TFM_Image_registration(cell_path='.', flatfield_correct=False, image_list=None,
-                           flatfield_images=None, darkfield_image=None):
+                           flatfield_images=None, darkfield_image=None,
+                           save_files=True, return_data=False):
     """Register bead images to a reference frame and optionally correct them.
 
-    This function writes a registered stack ``*_registered.tif`` and the shift
-    coordinates ``shiftcoordinates.txt`` inside ``cell_path``. Additional image
-    stacks can be shifted by providing ``image_list``.
+    Parameters
+    ----------
+    cell_path : str, optional
+        Folder containing the bead and reference stacks.
+    flatfield_correct : bool, optional
+        Apply flat-field correction using ``flatfield_images`` and ``darkfield_image``.
+    image_list : list of str, optional
+        Additional stacks to shift using the calculated coordinates.
+    flatfield_images, darkfield_image : ndarray, optional
+        Images used for flat-field correction.
+    save_files : bool, optional
+        If ``True`` (default) write registered stacks and coordinates to disk.
+    return_data : bool, optional
+        If ``True`` return the registered stack and shift coordinates.
+
+    Returns
+    -------
+    tuple(ndarray, ndarray) or None
+        Registered bead stack and shift coordinates when ``return_data`` is ``True``.
     """
     current_dir = os.getcwd()
     os.chdir(cell_path)
@@ -162,20 +179,24 @@ def TFM_Image_registration(cell_path='.', flatfield_correct=False, image_list=No
         io.imsave(ref_im[0], reference_image.astype('uint16'), check_contrast=False)
 
 
-    # Write out the registered stack
-    io.imsave(file_name + '_registered.tif', image_stack_registered.astype('uint16'), check_contrast=False)
 
-    # Write out the shifted coordinates
-    np.savetxt('shiftcoordinates.txt', shift_coordinates, delimiter=' ', newline='\n')
+    if save_files:
+        # Write out the registered stack
+        io.imsave(file_name + '_registered.tif', image_stack_registered.astype('uint16'), check_contrast=False)
 
-    if image_list is not None:
-        for i,image_name in enumerate(image_list):
-            if flatfield_correct == True:
-                shift_image_stack(image_name, shift_coordinates, flatfield_images[i+1], darkfield_image, correct_odd_imagesize = True)
-            else:
-                shift_image_stack(image_name, shift_coordinates, correct_odd_imagesize = True)
+        # Write out the shifted coordinates
+        np.savetxt('shiftcoordinates.txt', shift_coordinates, delimiter=' ', newline='\n')
+
+        if image_list is not None:
+            for i,image_name in enumerate(image_list):
+                if flatfield_correct == True:
+                    shift_image_stack(image_name, shift_coordinates, flatfield_images[i+1], darkfield_image, correct_odd_imagesize = True)
+                else:
+                    shift_image_stack(image_name, shift_coordinates, correct_odd_imagesize = True)
 
     os.chdir(current_dir)
+    if return_data:
+        return image_stack_registered, shift_coordinates
     return
 
 def shift_image_stack(image_stack_name, shift_coordinates, flatfield_image =  None, darkfield_image = None, correct_odd_imagesize = True):

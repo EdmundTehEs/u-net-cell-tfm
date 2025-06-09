@@ -20,8 +20,17 @@ from TFM_FTTC_tools import *
 
 def TFM_calculation(cell_path='.', shear_modulus=8600, um_per_pixel=.103174,
                     regparam=1e-16, downsample=12, timepoint=1,
-                    check_figure=False, fig_max_stress=1000):
-    """Run FTTC on a displacement stack and output traction maps."""
+                    check_figure=False, fig_max_stress=1000,
+                    save_files=True, return_data=False):
+    """Run FTTC on a displacement stack and output traction maps.
+
+    Parameters
+    ----------
+    save_files : bool, optional
+        If ``True`` (default) write intermediate and final results to disk.
+    return_data : bool, optional
+        If ``True`` return the traction and recovered displacement stacks.
+    """
     current_dir = os.getcwd()
     os.chdir(cell_path)
     # Find the displacement files
@@ -49,13 +58,12 @@ def TFM_calculation(cell_path='.', shear_modulus=8600, um_per_pixel=.103174,
 
     # for loop to go over all the images in the stack
 
-    # make a directory to store all the traction files
-    if os.path.isdir('traction_files/') == False:
-        os.mkdir('traction_files/')
-
-    # make a directory to store all the displacement files
-    if os.path.isdir('recovered_displacement_files/') == False:
-        os.mkdir('recovered_displacement_files/')
+    # make directories to store files if desired
+    if save_files:
+        if os.path.isdir('traction_files/') is False:
+            os.mkdir('traction_files/')
+        if os.path.isdir('recovered_displacement_files/') is False:
+            os.mkdir('recovered_displacement_files/')
 
     # make an empty image stack to hold traction  and recovered displacement maps
     traction_maps = np.zeros((N_images,N_rows, N_cols))
@@ -110,19 +118,22 @@ def TFM_calculation(cell_path='.', shear_modulus=8600, um_per_pixel=.103174,
 
         # store the norm in our traction map stack
         traction_maps[t,:,:] = fnorm.copy()
-        # save the traction stresses as images
-        io.imsave('traction_files/fx_%03d.tif' % (t + 1), f[0,:,:].astype('float32'), check_contrast=False)
-        io.imsave('traction_files/fy_%03d.tif' % (t + 1), f[1,:,:].astype('float32'), check_contrast=False)
+        if save_files:
+            # save the traction stresses as images
+            io.imsave('traction_files/fx_%03d.tif' % (t + 1), f[0,:,:].astype('float32'), check_contrast=False)
+            io.imsave('traction_files/fy_%03d.tif' % (t + 1), f[1,:,:].astype('float32'), check_contrast=False)
 
         # store the recovered displacement norm
         urec_norm = np.sqrt(urec[0,:,:]**2 + urec[1,:,:]**2)
         displacement_maps[t,:,:] = urec_norm.copy()
-        # save the recovered displacement vectors as images
-        io.imsave('recovered_displacement_files/disp_ur_%03d.tif' % (t + 1), urec[0,:,:].astype('float32'), check_contrast=False)
-        io.imsave('recovered_displacement_files/disp_vr_%03d.tif' % (t + 1), urec[1,:,:].astype('float32'), check_contrast=False)
+        if save_files:
+            # save the recovered displacement vectors as images
+            io.imsave('recovered_displacement_files/disp_ur_%03d.tif' % (t + 1), urec[0,:,:].astype('float32'), check_contrast=False)
+            io.imsave('recovered_displacement_files/disp_vr_%03d.tif' % (t + 1), urec[1,:,:].astype('float32'), check_contrast=False)
 
-    io.imsave('traction_maps.tif',traction_maps.astype('int16'), check_contrast=False)
-    io.imsave('recovered_displacement_maps.tif',displacement_maps.astype('float32'), check_contrast=False)
+    if save_files:
+        io.imsave('traction_maps.tif', traction_maps.astype('int16'), check_contrast=False)
+        io.imsave('recovered_displacement_maps.tif', displacement_maps.astype('float32'), check_contrast=False)
 
     # Create a dictionary of our parameters
     TFM_params = {
@@ -142,72 +153,73 @@ def TFM_calculation(cell_path='.', shear_modulus=8600, um_per_pixel=.103174,
         }
     # Convert the dictionary to a DataFrame
     TFM_params_df = pd.DataFrame(TFM_params, index=[0])
-    # Write the parameters to a CSV file for saving
-    TFM_params_df.to_csv('TFM_params.csv')
+    if save_files:
+        # Write the parameters to a CSV file for saving
+        TFM_params_df.to_csv('TFM_params.csv')
 
-    # save as a .txt file the regularization paramers
-    np.savetxt('Regularization_parameter.txt',[regparam])
+        # save as a .txt file the regularization paramers
+        np.savetxt('Regularization_parameter.txt', [regparam])
     
-    # for saving an image
+    if save_files:
+        # for saving an image
 
-    # Find the displacement and traction stress files
-    file_list_fx = sorted(glob.glob('traction_files/fx_*.tif'))
-    file_list_fy = sorted(glob.glob('traction_files/fy_*.tif'))
-    if len(file_list_fx) == 0 or len(file_list_fy) == 0:
-        raise FileNotFoundError('Traction files not found in traction_files/')
-    if not os.path.isfile(file_list_fx[timepoint - 1]) or not os.path.isfile(file_list_fy[timepoint - 1]):
-        raise FileNotFoundError('Specified traction file not found')
-    fx = io.imread(file_list_fx[timepoint - 1])
-    fy = io.imread(file_list_fy[timepoint - 1])
-    fnorm = np.sqrt(fx**2 + fy**2)
+        # Find the displacement and traction stress files
+        file_list_fx = sorted(glob.glob('traction_files/fx_*.tif'))
+        file_list_fy = sorted(glob.glob('traction_files/fy_*.tif'))
+        if len(file_list_fx) == 0 or len(file_list_fy) == 0:
+            raise FileNotFoundError('Traction files not found in traction_files/')
+        if not os.path.isfile(file_list_fx[timepoint - 1]) or not os.path.isfile(file_list_fy[timepoint - 1]):
+            raise FileNotFoundError('Specified traction file not found')
+        fx = io.imread(file_list_fx[timepoint - 1])
+        fy = io.imread(file_list_fy[timepoint - 1])
+        fnorm = np.sqrt(fx**2 + fy**2)
 
-    x_small = grid_mat[0,::downsample,::downsample]
-    y_small = grid_mat[1,::downsample,::downsample]
-    fx_small = fx[::downsample,::downsample]
-    fy_small = fy[::downsample,::downsample]
+        x_small = grid_mat[0,::downsample,::downsample]
+        y_small = grid_mat[1,::downsample,::downsample]
+        fx_small = fx[::downsample,::downsample]
+        fy_small = fy[::downsample,::downsample]
 
 
-    traction_map_fig, traction_map_axes = plt.subplots()
-    traction_map_axes.imshow(fnorm, vmin=0, vmax=np.max(fnorm)*.9)
-    traction_map_axes.quiver(x_small, y_small, fx_small, -fy_small, color='w', alpha=0.5)
-    #traction_map_fig.savefig('myimage.svg', format='svg', dpi=1200)
-    traction_map_fig.savefig('Traction_vectors.png', format='png', dpi=300)
+        traction_map_fig, traction_map_axes = plt.subplots()
+        traction_map_axes.imshow(fnorm, vmin=0, vmax=np.max(fnorm)*.9)
+        traction_map_axes.quiver(x_small, y_small, fx_small, -fy_small, color='w', alpha=0.5)
+        #traction_map_fig.savefig('myimage.svg', format='svg', dpi=1200)
+        traction_map_fig.savefig('Traction_vectors.png', format='png', dpi=300)
 
-    if check_figure == True:
-        urec_norm = np.sqrt(urec[0,:,:]**2 + urec[1,:,:]**2)
-        # Display the Displacement maps and Traction Maps
-        TFM_check_fig, TFM_check_axes = plt.subplots(nrows=2, ncols=4)
-        #TFM_check_axes[0,0].imshow(unorm, vmin=0, vmax=3)
-        #TFM_check_axes[0,0].set_title('Displacement\nMap')
-        #TFM_check_axes[0,0].axis('off')
-        TFM_check_axes[0,0].imshow(urec_norm, vmin=0, vmax=np.max(urec_norm)*.9)
-        TFM_check_axes[0,0].set_title('Recovered\nDisplacement\nMap')
-        TFM_check_axes[0,0].axis('off')
-        TFM_check_axes[0,1].imshow(fnorm, vmin=0, vmax=np.max(fnorm)*.9)
-        TFM_check_axes[0,1].set_title('Tractions\nStresses')
-        TFM_check_axes[0,1].axis('off')
-        TFM_check_axes[0,2].imshow(f[0,:,:] )
-        TFM_check_axes[0,2].set_title('FX Traction\nStresses')
-        TFM_check_axes[0,2].axis('off')
-        TFM_check_axes[0,3].imshow(f[1,:,:])
-        TFM_check_axes[0,3].set_title('FY Traction\nStresses')
-        TFM_check_axes[0,3].axis('off')
-    
-        TFM_check_axes[1,0].imshow(grid_mat[0,:,:])
-        TFM_check_axes[1,0].set_title('x\ncoordinates')
-        TFM_check_axes[1,0].axis('off')
-        TFM_check_axes[1,1].imshow(grid_mat[1,:,:])
-        TFM_check_axes[1,1].set_title('y\ncoordinates')
-        TFM_check_axes[1,1].axis('off')
-        TFM_check_axes[1,2].imshow(u[0,:,:])
-        TFM_check_axes[1,2].set_title('u\ncoordinates')
-        TFM_check_axes[1,2].axis('off')
-        TFM_check_axes[1,3].imshow(u[1,:,:])
-        TFM_check_axes[1,3].set_title('v\ncoordinates')
-        TFM_check_axes[1,3].axis('off')
-        TFM_check_fig.tight_layout()
-        TFM_check_fig.show()
+        if check_figure == True:
+            urec_norm = np.sqrt(urec[0,:,:]**2 + urec[1,:,:]**2)
+            # Display the Displacement maps and Traction Maps
+            TFM_check_fig, TFM_check_axes = plt.subplots(nrows=2, ncols=4)
+            TFM_check_axes[0,0].imshow(urec_norm, vmin=0, vmax=np.max(urec_norm)*.9)
+            TFM_check_axes[0,0].set_title('Recovered\nDisplacement\nMap')
+            TFM_check_axes[0,0].axis('off')
+            TFM_check_axes[0,1].imshow(fnorm, vmin=0, vmax=np.max(fnorm)*.9)
+            TFM_check_axes[0,1].set_title('Tractions\nStresses')
+            TFM_check_axes[0,1].axis('off')
+            TFM_check_axes[0,2].imshow(f[0,:,:])
+            TFM_check_axes[0,2].set_title('FX Traction\nStresses')
+            TFM_check_axes[0,2].axis('off')
+            TFM_check_axes[0,3].imshow(f[1,:,:])
+            TFM_check_axes[0,3].set_title('FY Traction\nStresses')
+            TFM_check_axes[0,3].axis('off')
+
+            TFM_check_axes[1,0].imshow(grid_mat[0,:,:])
+            TFM_check_axes[1,0].set_title('x\ncoordinates')
+            TFM_check_axes[1,0].axis('off')
+            TFM_check_axes[1,1].imshow(grid_mat[1,:,:])
+            TFM_check_axes[1,1].set_title('y\ncoordinates')
+            TFM_check_axes[1,1].axis('off')
+            TFM_check_axes[1,2].imshow(u[0,:,:])
+            TFM_check_axes[1,2].set_title('u\ncoordinates')
+            TFM_check_axes[1,2].axis('off')
+            TFM_check_axes[1,3].imshow(u[1,:,:])
+            TFM_check_axes[1,3].set_title('v\ncoordinates')
+            TFM_check_axes[1,3].axis('off')
+            TFM_check_fig.tight_layout()
+            TFM_check_fig.show()
     os.chdir(current_dir)
+    if return_data:
+        return traction_maps, displacement_maps
     return
 
 
