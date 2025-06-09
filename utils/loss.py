@@ -29,6 +29,43 @@ class r_MSE_loss_dict(nn.MSELoss):
         MSE =F.mse_loss(prediction, target)
         return {'mse_loss': MSE, 'base_loss': MSE }
 
+
+class JaccardLoss(nn.Module):
+    """Jaccard (IoU) loss for segmentation masks."""
+
+    def __init__(self, **kwargs):
+        super().__init__()
+
+    def forward(self, prediction, target, expweight: float = 0.0):
+        """Return Jaccard loss between ``prediction`` and ``target``.
+
+        Parameters
+        ----------
+        prediction : ``torch.Tensor``
+            Model output tensor of shape ``(B, C, H, W)``. Should contain
+            probabilities or logits for the positive class.
+        target : ``torch.Tensor``
+            Ground truth tensor with the same shape as ``prediction``.
+        expweight : float, optional
+            Unused argument to keep the signature compatible with other
+            losses.
+        """
+
+        if prediction.shape != target.shape:
+            raise ValueError("Prediction and target must have the same shape")
+
+        pred = torch.sigmoid(prediction) if prediction.dtype.is_floating_point else prediction.float()
+        target = target.float()
+
+        dims = tuple(range(1, pred.ndim))
+        intersection = torch.sum(pred * target, dim=dims)
+        union = torch.sum(pred + target, dim=dims) - intersection
+
+        iou = (intersection + 1e-7) / (union + 1e-7)
+        loss = 1.0 - iou
+
+        return {'base_loss': loss.mean(), 'jaccard_loss': loss.mean()}
+
      
 
 
@@ -201,5 +238,6 @@ class AM_loss_dict(nn.MSELoss): # Angle magnitude loss
 loss_function_dict = {
                         'xy': XY_loss_dict,
                         'am': AM_loss_dict,
-                        'r_mse': r_MSE_loss_dict, 
+                        'r_mse': r_MSE_loss_dict,
+                        'jaccard': JaccardLoss,
                         }
