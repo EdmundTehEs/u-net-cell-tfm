@@ -3,15 +3,11 @@ import numpy as np                                             # basic math
 from scipy.fft import fft2, ifft2, ifftshift               # FFT for image registration
 from scipy.interpolate import griddata, SmoothBivariateSpline  # Interpolation for fixing bad PIV vectors
 from scipy import optimize                                     # curve fitting
-from scipy.sparse import spdiags, csr_matrix, linalg           # sparse matrix algebra
 import matplotlib.pyplot as plt                                # for plotting
 import glob as glob                                            # grabbing file names
 import skimage.io as io                                        # reading in images
 import os
-import openpiv.pyprocess
 import scipy.sparse as sparse
-import scipy.linalg as linalg
-from scipy import optimize                                     # curve fitting
 try:
     from sksparse.cholmod import cholesky_AAt
 except:

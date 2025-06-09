@@ -11,7 +11,6 @@ from torchvision import transforms
 from torch.utils.data.sampler import SubsetRandomSampler
 from skimage import filters
 from skimage import morphology
-from time import time
 
 import warnings
 warnings.filterwarnings("ignore")

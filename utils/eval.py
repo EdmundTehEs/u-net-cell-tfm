@@ -1,12 +1,10 @@
 import os
 import sys
 import pickle
-import pickle
 #from natsort import natsorted
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn.functional as F
 import time
 from datetime import datetime
 import scipy.ndimage
@@ -15,7 +13,6 @@ from skimage.measure import label, regionprops, regionprops_table
 
 from utils.utils_data_processing_base import SubsetSampler
 
-import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
 import skimage
