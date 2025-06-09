@@ -133,3 +133,7 @@ The deep learning methodology and force prediction pipeline are adapted from the
 > https://doi.org/10.1016/j.cell.2023.11.041
 
 Their publication and open-source model implementation provided the foundational structure and conceptual basis for predicting traction force distributions from focal adhesion protein images using U-Net-based architectures.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
