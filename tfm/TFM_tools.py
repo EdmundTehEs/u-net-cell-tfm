@@ -18,7 +18,10 @@ from TFM_FTTC_tools import *
 
 
 
-def TFM_calculation(cell_path='.', shear_modulus = 8600, um_per_pixel = .103174, regparam = 1e-16, downsample = 12, timepoint = 1, check_figure=False, fig_max_stress = 1000):
+def TFM_calculation(cell_path='.', shear_modulus=8600, um_per_pixel=.103174,
+                    regparam=1e-16, downsample=12, timepoint=1,
+                    check_figure=False, fig_max_stress=1000):
+    """Run FTTC on a displacement stack and output traction maps."""
     current_dir = os.getcwd()
     os.chdir(cell_path)
     # Find the displacement files
@@ -209,6 +212,7 @@ def TFM_calculation(cell_path='.', shear_modulus = 8600, um_per_pixel = .103174,
 
 
 def TFM_analysis(GFP='', force_min=0):
+    """Analyze traction maps to extract summary metrics."""
 
     # Read in the CSV file with all the file details and convert to a dictionary
     temp_dict = pd.read_csv('TFM_params.csv')
@@ -347,7 +351,10 @@ def TFM_analysis(GFP='', force_min=0):
 
     return
 
-def cellmask_threshold(cell_path='.', imagename='561short_registered.tif', small_object_size=50, cell_minimum_area=50000, dilation_size = 10, save_figure=True, plot_figure=True, timepoint = 0):
+def cellmask_threshold(cell_path='.', imagename='561short_registered.tif', small_object_size=50,
+                       cell_minimum_area=50000, dilation_size=10, save_figure=True,
+                       plot_figure=True, timepoint=0):
+    """Generate cell and force masks from a fluorescence stack."""
     current_dir = os.getcwd()
     os.chdir(cell_path)
     # check if it's a string or a matrix and read in the image
@@ -502,9 +509,10 @@ def cellmask_threshold(cell_path='.', imagename='561short_registered.tif', small
     return cellmask_stack, forcemask_stack, threshold
 
 
-def crop_TFM_image(frame, width, height, corner = (0,0), mask = None, arrow_spacing = 12, LUT = 'viridis', arrow_scale = None, 
-                   TFM_min = 0, TFM_max = None, arrow_color = 'w', min_arrow_mag = None, arrow_width = 1, colorbar = False, 
+def crop_TFM_image(frame, width, height, corner = (0,0), mask = None, arrow_spacing = 12, LUT = 'viridis', arrow_scale = None,
+                   TFM_min = 0, TFM_max = None, arrow_color = 'w', min_arrow_mag = None, arrow_width = 1, colorbar = False,
                    save_fig = True, file_type = 'both', dpi=150, base_folder = '', show_fig = True):
+    """Create a cropped traction map image with optional quiver overlay."""
     # get list of images
     fx_im_list = sorted(glob.glob('traction_files/fx*.tif'))
     fy_im_list = sorted(glob.glob('traction_files/fy*.tif'))

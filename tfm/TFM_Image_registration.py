@@ -8,9 +8,7 @@ from scipy.fftpack import fft2, ifft2, ifftshift     		 # for fourier transform 
 from skimage.registration import phase_cross_correlation     # registration function
 
 def flat_field_correct_image(image, flat_field_image, dark_image):
-    '''
-    Corrects for field flatness and aberrations due to camera/objective/lasers
-    '''
+    """Apply flat-field and dark-field correction to an image stack."""
 
     # check if the image is a stack
     if len(image.shape) > 2:
@@ -28,7 +26,14 @@ def flat_field_correct_image(image, flat_field_image, dark_image):
         
     return corrected_image
 
-def TFM_Image_registration(cell_path='.', flatfield_correct = False, image_list = None, flatfield_images = None, darkfield_image = None):
+def TFM_Image_registration(cell_path='.', flatfield_correct=False, image_list=None,
+                           flatfield_images=None, darkfield_image=None):
+    """Register bead images to a reference frame and optionally correct them.
+
+    This function writes a registered stack ``*_registered.tif`` and the shift
+    coordinates ``shiftcoordinates.txt`` inside ``cell_path``. Additional image
+    stacks can be shifted by providing ``image_list``.
+    """
     current_dir = os.getcwd()
     os.chdir(cell_path)
 

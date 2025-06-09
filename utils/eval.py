@@ -18,6 +18,7 @@ matplotlib.use('Agg')
 import skimage
  
 def predict(out_dir, device, models, dataset, scalar_callbacks, hist_callbacks, skip, include):
+    """Run inference on a dataset and save results to ``out_dir``."""
     d = datetime.now()
     dstr = d.strftime("_%y%m%d_%H%M")
 
@@ -142,7 +143,8 @@ def get_size(obj, seen=None):
 
 
 def peak_sum(regionmask, intensity_image):
-        return np.sum(intensity_image)
+    """scikit-image regionprops callback returning summed intensity."""
+    return np.sum(intensity_image)
        
         
 

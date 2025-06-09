@@ -28,8 +28,10 @@ Datasets
 '''
 
 def atoi(text):
+    """Return int if ``text`` is numeric else return as-is."""
     return int(text) if text.isdigit() else text
 def natural_keys(text):
+    """Split string for natural sort order."""
     return [atoi(c) for c in re.split(r'(\d+)', text)]
 
 channel_to_protein_dict = {
@@ -44,7 +46,8 @@ channel_to_protein_dict = {
     
 
 def args_to_transform_kwargs(norm_output=None, perturb_input='', perturb_output='', add_noise=''):
-    n_o = {s.split(',')[0]: float( s.split(',')[1] ) for s in norm_output.split('/')} if norm_output is not None else None 
+    """Parse preprocessing kwargs from CLI strings."""
+    n_o = {s.split(',')[0]: float( s.split(',')[1] ) for s in norm_output.split('/')} if norm_output is not None else None
     #p_i = {s.split(',')[0]: float( s.split(',')[1] ) for s in perturb_input.split('/')}  if perturb_input is not None else None 
     p_i = perturb_input.split(',')
     p_o = perturb_output.split(',')

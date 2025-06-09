@@ -25,8 +25,10 @@ Datasets
 '''
 
 def atoi(text):
+    """Return integer if ``text`` is digits, otherwise return the string."""
     return int(text) if text.isdigit() else text
 def natural_keys(text):
+    """Split string into list of text and integer chunks for sorting."""
     return [atoi(c) for c in re.split(r'(\d+)', text)]
 
 channel_to_protein_dict = {
@@ -52,6 +54,7 @@ def transform_list(
                     angmag=False,
                     rotate=True
                     ):
+    """Create a torchvision transform pipeline for dataset generation."""
     transform_list = []
     
     if 'rescale' in perturb_input or 'rescale' in perturb_output: transform_list.append(RandomRescale(rescale_factor=0.7))
@@ -81,6 +84,7 @@ def transform_list(
 
 
 def prediction_transforms(args, opt_args = {}):
+    """Return transforms used during prediction/inference."""
     transform_list = []
     transform_list.append(CellCrop(args.crop_size))
     if 'zoom' in args.transform.split(','): transform_list.append(ResolutionChange(args.zoomfactor))
@@ -102,7 +106,8 @@ def prediction_transforms(args, opt_args = {}):
 
 
 def args_to_transform_kwargs(norm_output=None, perturb_input='', perturb_output='', add_noise=''):
-    n_o = {s.split(',')[0]: float( s.split(',')[1] ) for s in norm_output.split('/')} 
+    """Parse CLI strings into kwargs for :func:`transform_list`."""
+    n_o = {s.split(',')[0]: float( s.split(',')[1] ) for s in norm_output.split('/')}
     p_i = perturb_input.split(',')
     p_o = perturb_output.split(',')
     try:
