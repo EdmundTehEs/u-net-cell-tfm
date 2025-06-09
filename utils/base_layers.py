@@ -1,7 +1,5 @@
-from time import time
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class SinAct(nn.Module):

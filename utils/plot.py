@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import matplotlib.colors as mplcolors
 import numpy as np
 import skimage.measure as measure
