@@ -8,7 +8,8 @@ import os                                                      # for making dire
 
 
 def TFM_optical_flow(cell_path='.', pyr_scale=0.25, levels=4, winsize=24,
-                     iterations=4, poly_n=7, poly_sigma=1.25):
+                     iterations=4, poly_n=7, poly_sigma=1.25,
+                     save_files=True, return_data=False):
     """Calculate bead displacements using Farneback optical flow.
 
     Parameters
@@ -18,9 +19,14 @@ def TFM_optical_flow(cell_path='.', pyr_scale=0.25, levels=4, winsize=24,
     pyr_scale, levels, winsize, iterations, poly_n, poly_sigma : float or int
         Parameters passed to ``cv2.calcOpticalFlowFarneback``.
 
+    save_files : bool, optional
+        If ``True`` (default) write displacement images and parameter CSVs to disk.
+    return_data : bool, optional
+        If ``True`` return the displacement fields as arrays.
+
     Side Effects
     ------------
-    Saves displacement images in ``displacement_files/`` inside ``cell_path``.
+    When ``save_files`` is ``True`` saves displacement images in ``displacement_files/``.
     """
     current_dir = os.getcwd()
     os.chdir(cell_path)
@@ -37,8 +43,9 @@ def TFM_optical_flow(cell_path='.', pyr_scale=0.25, levels=4, winsize=24,
     
     # Convert the dictionary to a DataFrame
     PIV_params_df = pd.DataFrame(PIV_params, index=[0])
-    # Write the parameters to a CSV file for saving
-    PIV_params_df.to_csv('PIV_params.csv')
+    if save_files:
+        # Write the parameters to a CSV file for saving
+        PIV_params_df.to_csv('PIV_params.csv')
 
     # Run a for loop with all the images
 
@@ -51,7 +58,7 @@ def TFM_optical_flow(cell_path='.', pyr_scale=0.25, levels=4, winsize=24,
     reference_image = io.imread(ref_file_list[0])
 
     # make a directory to store all the displacement files
-    if os.path.isdir('displacement_files/') == False:
+    if save_files and os.path.isdir('displacement_files/') == False:
         os.mkdir('displacement_files/')
 
     # read in image stack
@@ -69,6 +76,9 @@ def TFM_optical_flow(cell_path='.', pyr_scale=0.25, levels=4, winsize=24,
     # Get the number of images in the stack
     N_images = image_stack.shape[0]
 
+    disp_u = np.zeros((N_images, reference_image.shape[0], reference_image.shape[1]))
+    disp_v = np.zeros_like(disp_u)
+
     for t, image_stack_plane in enumerate(image_stack):
         
         # perform optical flow forward and backward
@@ -78,10 +88,16 @@ def TFM_optical_flow(cell_path='.', pyr_scale=0.25, levels=4, winsize=24,
         # take the average of the two flow fields
         flow = (flow_forward - flow_reverse) / 2
 
-        # save the displacements as images
-        io.imsave('displacement_files/disp_u_%03d.tif' % (t), flow[:,:,0], check_contrast=False)
-        io.imsave('displacement_files/disp_v_%03d.tif' % (t), flow[:,:,1], check_contrast=False)
+        disp_u[t] = flow[:,:,0]
+        disp_v[t] = flow[:,:,1]
+
+        if save_files:
+            # save the displacements as images
+            io.imsave('displacement_files/disp_u_%03d.tif' % (t), flow[:,:,0], check_contrast=False)
+            io.imsave('displacement_files/disp_v_%03d.tif' % (t), flow[:,:,1], check_contrast=False)
 
 
     os.chdir(current_dir)
+    if return_data:
+        return disp_u, disp_v
     return
