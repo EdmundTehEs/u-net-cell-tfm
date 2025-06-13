@@ -1,4 +1,4 @@
-name: /project/vitelli/ml_venv
+name: cellstress_env
 channels:
   - anaconda
   - pytorch
@@ -541,4 +541,3 @@ dependencies:
 variables:
   NUMEXPR_MAX_THREADS: '1'
   OMP_NUM_THREADS: '1'
-prefix: /project/vitelli/ml_venv
