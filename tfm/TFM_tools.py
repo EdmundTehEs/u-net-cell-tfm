@@ -14,7 +14,7 @@ from skimage.morphology import opening, disk, remove_small_objects, remove_small
 import cv2                                                     # for filtering vector fields
 import matplotlib.pyplot as plt                                # for plotting
 from matplotlib import cm, colors                              # for controlling colormaps
-from TFM_FTTC_tools import *
+from .TFM_FTTC_tools import *
 
 
 
